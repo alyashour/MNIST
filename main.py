@@ -1,12 +1,10 @@
-import os
 import random
 
 import tensorflow as tf
-import seaborn as sns
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+
+from gui import run_gui
 
 # NOTE: had to run
 # `set TF_ENABLE_ONEDNN_OPTS=1`
@@ -44,8 +42,6 @@ test_labels = tf.one_hot(test_labels.astype(np.int32), depth=10)
 
 # visualize one of the images for fun
 index = random.randint(0, train_images.shape[0] - 1)
-print('index', index)
-print(train_images[index][:,:,0])
 plt.imshow(train_images[index][:,:,0])
 plt.title("Sample Image")
 plt.show()
@@ -54,7 +50,7 @@ plt.show()
 # define the module
 batch_size = 64
 num_classes = 10
-epochs = 5
+epochs = 2
 
 layers = tf.keras.layers
 model = tf.keras.models.Sequential([
@@ -89,7 +85,7 @@ class C(tf.keras.callbacks.Callback):
 callbacks = C()
 
 # save the model, weights, and optimizer state
-model.save('mnist_cnn_model.h5')
+model.save('mnist_cnn_model.keras')
 
 # test
 history = model.fit(train_images, train_labels,
@@ -102,10 +98,14 @@ history = model.fit(train_images, train_labels,
 fig, ax = plt.subplots(2, 1)
 ax[0].plot(history.history['loss'], color='b', label='Training Loss')
 ax[0].plot(history.history['val_loss'], color='r', label='Validation Loss')
-legend = ax[0].legend(loc='best', shadow=True)
-plt.show()
+ax[0].legend(loc='best', shadow=True)
 
 ax[1].plot(history.history['acc'], color='b', label='Training Accuracy')
 ax[1].plot(history.history['val_acc'], color='r', label='Validation Accuracy')
-legend = ax[1].legend(loc='best', shadow=True)
+ax[1].legend(loc='best', shadow=True)
+plt.tight_layout()
 plt.show()
+
+model.summary()
+
+run_gui(model)
