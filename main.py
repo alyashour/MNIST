@@ -50,7 +50,7 @@ plt.show()
 # define the module
 batch_size = 64
 num_classes = 10
-epochs = 2
+epochs = 5
 
 layers = tf.keras.layers
 model = tf.keras.models.Sequential([
@@ -84,10 +84,7 @@ class C(tf.keras.callbacks.Callback):
 
 callbacks = C()
 
-# save the model, weights, and optimizer state
-model.save('mnist_cnn_model.keras')
-
-# test
+# train
 history = model.fit(train_images, train_labels,
                     batch_size=batch_size,
                     epochs=epochs,
@@ -105,6 +102,9 @@ ax[1].plot(history.history['val_acc'], color='r', label='Validation Accuracy')
 ax[1].legend(loc='best', shadow=True)
 plt.tight_layout()
 plt.show()
+
+# save the model, weights, and optimizer state
+model.save('mnist_cnn_model.keras')
 
 model.summary()
 

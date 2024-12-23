@@ -69,11 +69,11 @@ def main():
     test_images = test_images / 255.0
     test_labels = tf.one_hot(test_labels.astype(np.int32), depth=10)
 
-    model = tf.keras.models.load_model('mnist_cnn_model.keras', compile=True)
-    model.summary()
+    model = tf.keras.models.load_model('mnist_cnn_model.keras')
+
     test_loss, test_accuracy = model.evaluate(test_images, test_labels)
     print(f'Test loss: {test_loss:.3f}, Test accuracy: {test_accuracy:.3f}')
-    # run_gui(model)
+    run_gui(model)
 
 if __name__ == '__main__':
     main()
