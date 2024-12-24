@@ -1,0 +1,52 @@
+# Layers
+
+- Conv2D?
+  - What It Does:
+    - Applies a convolution operation to the input.
+    - Applies a set of learnable filters (kernels) over the input data to extract spatial features, such as edges or patterns.
+  - Parameters:
+    - 32: Number of filters (output feature maps).
+    - (5, 5): Size of each filter (kernel dimensions).
+    - padding='same': Ensures the output size is the same as the input size by adding padding to the edges.
+    - activation='relu': Activation function applied to the output of the convolution operation.
+    - input_shape=input_shape: Specifies the shape of the input data (required only for the first layer).
+- MaxPool?
+  - Reduces spatial dimensions, retaining dominant features.
+    - What It Does:
+        - Applies max pooling, which reduces the spatial dimensions (width and height) of the input by taking the maximum value in a pooling window.
+        - Helps in reducing computation, lowering memory usage, and extracting dominant features.
+    - Default Behavior:
+      - Pool size is (2, 2) (not explicitly mentioned in the code, but it's the default).
+      - Stride is equal to the pool size unless specified (e.g., strides=(2, 2) in the second MaxPool2D layer).
+- Dropout?
+  - What It Does:
+    - A regularization technique to prevent overfitting.
+    - Randomly "drops out" (sets to zero) a fraction of the neurons during training.
+  - Parameters:
+    - 0.25: Dropout rate, meaning 25% of neurons are dropped out.
+    - 0.5: Dropout rate of 50% in the fully connected layers.
+- Flatten?
+  - What It Does:
+    - Converts a multi-dimensional tensor (e.g., 2D feature maps) into a 1D vector.
+    - Required before passing the data to fully connected (Dense) layers, which expect a flat input.
+- Dense?
+  - What It Does:
+    - A fully connected (dense) layer where every neuron is connected to every neuron in the previous layer.
+    - Used to learn high-level representations.
+  - Parameters:
+    - 128: Number of neurons in the layer.
+    - activation='relu': Non-linear activation function applied to the layer's output.
+    - num_classes: Number of output classes, with activation='softmax' to produce class probabilities.
+- Activation?
+  - What It Does:
+    - Applies a non-linear transformation to the output of a layer.
+  - Common activations:
+    - relu: Rectified Linear Unit; introduces non-linearity by outputting (look up the graph!)
+    - max(0,x).
+    - softmax: Converts logits (raw scores) into probabilities that sum to 1, used in the final layer for classification.
+- Padding?
+  - What It Does:
+    - Determines how the edges of the input are handled during convolution.
+  - Types:
+    - same: Adds padding to ensure the output dimensions are the same as the input dimensions.
+    - valid: No padding; output dimensions are reduced based on the kernel size.

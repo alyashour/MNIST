@@ -24,7 +24,6 @@ print(np.isnan(train_images).any()) # expect false
 print(np.isnan(test_images).any()) # expect false
 
 # normalization
-# "first layer will expect a single 60_0000x28x28x1 tensor instead of 60_000 28x28x1 tensors."
 # We will normalize each value between 0.0 and 1.0 to make the model run faster.
 # since each pixel is black-white byte (0-255) we can normalize by dividing by 255.0
 input_shape = (28, 28, 1)
