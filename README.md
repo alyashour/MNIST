@@ -12,6 +12,5 @@
 - Numpy
 - MPL
 - seaborn (visualization)
-- 
 
 Aly Ashour
