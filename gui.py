@@ -47,7 +47,6 @@ def run_gui(model):
         x2, y2 = (event.x + 10), (event.y + 10)
         canvas.create_oval(x1, y1, x2, y2, fill='black')
 
-
     canvas.bind("<B1-Motion>", paint)
 
     btn_predict = tk.Button(root, text="Predict", command=predict_digit)
@@ -73,7 +72,7 @@ def main():
     model.summary()
     test_loss, test_accuracy = model.evaluate(test_images, test_labels)
     print(f'Test loss: {test_loss:.3f}, Test accuracy: {test_accuracy:.3f}')
-    # run_gui(model)
+    run_gui(model)
 
 if __name__ == '__main__':
     main()

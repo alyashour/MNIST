@@ -1,111 +1,238 @@
-import random
+import argparse
+from tkinter import Canvas
 
-import tensorflow as tf
+import tkinter as tk
+
 import numpy as np
-import matplotlib.pyplot as plt
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from PIL import Image, ImageGrab
+from torchvision import datasets, transforms
+from torch.optim.lr_scheduler import StepLR
+import Quartz
 
-from gui import run_gui
 
-# NOTE: had to run
-# `set TF_ENABLE_ONEDNN_OPTS=1`
-# in windows console before running
-# src=https://pypi.org/project/tensorflow-intel/
+class CNN(nn.Module):
+    def __init__(self):
+        super(CNN, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(9216, 128)
+        self.fc2 = nn.Linear(128, 10)
 
-# check installation
-print(tf.__version__)
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
+        x = self.fc2(x)
+        output = F.log_softmax(x, dim=1)
+        return output
 
-# data preprocessing
-# load data
-mnist_dataset = tf.keras.datasets.mnist
-(train_images, train_labels), (test_images, test_labels) = mnist_dataset.load_data()
-
-# check for nans
-print(np.isnan(train_images).any()) # expect false
-print(np.isnan(test_images).any()) # expect false
-
-# normalization
-# "first layer will expect a single 60_0000x28x28x1 tensor instead of 60_000 28x28x1 tensors."
-# We will normalize each value between 0.0 and 1.0 to make the model run faster.
-# since each pixel is black-white byte (0-255) we can normalize by dividing by 255.0
-input_shape = (28, 28, 1)
-train_images = train_images.reshape(train_images.shape[0], train_images.shape[1], train_images.shape[2], 1)
-train_images = train_images / 255.0
-test_images = test_images.reshape(test_images.shape[0], test_images.shape[1], test_images.shape[2], 1)
-test_images = test_images / 255.0
-
-# label encoding
-# since our data is categorical we need to convert them into "one-hot encodings"
-# what is a one hot encoding? https://www.geeksforgeeks.org/ml-one-hot-encoding/
-# basically convert the label (1, 2, 3, etc.) to ([1, 0, 0], [0, 1, 0], [0, 0, 1], etc.)
-train_labels = tf.one_hot(train_labels.astype(np.int32), depth=10)
-test_labels = tf.one_hot(test_labels.astype(np.int32), depth=10)
-
-# visualize one of the images for fun
-index = random.randint(0, train_images.shape[0] - 1)
-plt.imshow(train_images[index][:,:,0])
-plt.title("Sample Image")
-plt.show()
-
-# building the cnn model
-# define the module
-batch_size = 64
-num_classes = 10
-epochs = 2
-
-layers = tf.keras.layers
-model = tf.keras.models.Sequential([
-    layers.Conv2D(32, (5, 5), padding='same', activation='relu', input_shape=input_shape),
-    layers.Conv2D(32, (5, 5), padding='same', activation='relu'),
-    layers.MaxPool2D(),
-    layers.Dropout(0.25),
-    layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
-    layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
-    layers.MaxPool2D(strides=(2, 2)),
-    layers.Dropout(0.25),
-    layers.Flatten(),
-    layers.Dense(128, activation='relu'),
-    layers.Dropout(0.5),
-    layers.Dense(num_classes, activation='softmax')
+transform=transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
 ])
 
-# compile the model
-model.compile(
-    optimizer=tf.keras.optimizers.RMSprop(epsilon=1e-8),
-    loss='categorical_crossentropy',
-    metrics=['acc']
-)
+def train(args, model, device, train_loader, optimizer, epoch):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = F.nll_loss(output, target)
+        loss.backward()
+        optimizer.step()
+        if batch_idx % args.log_interval == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, batch_idx * len(data), len(train_loader.dataset),
+                       100. * batch_idx / len(train_loader), loss.item()))
+            if args.dry_run:
+                break
 
-# define the callback
-class C(tf.keras.callbacks.Callback):
-    def on_epoch_end(self, epoch, logs=None):
-        if logs.get('acc') > 0.995:
-            print("\nReached 99.5% accuracy so cancelling training!")
-            self.model.stop_training = True
 
-callbacks = C()
+def test(model, device, test_loader):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
 
-# save the model, weights, and optimizer state
-model.save('mnist_cnn_model.keras')
+    test_loss /= len(test_loader.dataset)
 
-# test
-history = model.fit(train_images, train_labels,
-                    batch_size=batch_size,
-                    epochs=epochs,
-                    validation_split=0.1,
-                    callbacks=[callbacks])
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
 
-# evaluate
-fig, ax = plt.subplots(2, 1)
-ax[0].plot(history.history['loss'], color='b', label='Training Loss')
-ax[0].plot(history.history['val_loss'], color='r', label='Validation Loss')
-ax[0].legend(loc='best', shadow=True)
+BATCH_SIZE = 64
+TEST_BATCH_SIZE = 1000
+EPOCHS = 4
+LEARNING_RATE = 1.0
+GAMMA = 0.7
 
-ax[1].plot(history.history['acc'], color='b', label='Training Accuracy')
-ax[1].plot(history.history['val_acc'], color='r', label='Validation Accuracy')
-ax[1].legend(loc='best', shadow=True)
-plt.tight_layout()
-plt.show()
+def train_model():
+    # Training settings
+    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    parser.add_argument('--batch-size', type=int, default=BATCH_SIZE, metavar='N',
+                        help=f'input batch size for training (default: {BATCH_SIZE})')
+    parser.add_argument('--test-batch-size', type=int, default=TEST_BATCH_SIZE, metavar='N',
+                        help=f'input batch size for testing (default: {TEST_BATCH_SIZE})')
+    parser.add_argument('--epochs', type=int, default=EPOCHS, metavar='N',
+                        help=f'number of epochs to train (default: {EPOCHS})')
+    parser.add_argument('--lr', type=float, default=LEARNING_RATE, metavar='LR',
+                        help=f'learning rate (default: {LEARNING_RATE})')
+    parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
+                        help='Learning rate step gamma (default: 0.7)')
+    parser.add_argument('--no-cuda', action='store_true', default=True,
+                        help='disables CUDA training')
+    parser.add_argument('--no-mps', action='store_true', default=False,
+                        help='disables macOS GPU training')
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='quickly check a single pass')
+    parser.add_argument('--seed', type=int, default=1, metavar='S',
+                        help='random seed (default: 1)')
+    parser.add_argument('--log-interval', type=int, default=1000, metavar='N',
+                        help='how many batches to wait before logging training status')
+    parser.add_argument('--save-model', action='store_true', default=True,
+                        help='For Saving the current Model')
+    args = parser.parse_args()
+    use_cuda = not args.no_cuda and torch.cuda.is_available()
+    use_mps = not args.no_mps and torch.backends.mps.is_available()
 
-model.summary()
+    torch.manual_seed(args.seed)
 
-run_gui(model)
+    if use_cuda:
+        device = torch.device("cuda")
+    elif use_mps:
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+    train_kwargs = {'batch_size': args.batch_size}
+    test_kwargs = {'batch_size': args.test_batch_size}
+    if use_cuda:
+        cuda_kwargs = {'num_workers': 1,
+                       'pin_memory': True,
+                       'shuffle': True}
+        train_kwargs.update(cuda_kwargs)
+        test_kwargs.update(cuda_kwargs)
+
+    dataset1 = datasets.MNIST('../data', train=True, download=True,
+                              transform=transform)
+    dataset2 = datasets.MNIST('../data', train=False,
+                              transform=transform)
+    train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
+    test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
+
+    model = CNN().to(device)
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+
+    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
+    for epoch in range(1, args.epochs + 1):
+        train(args, model, device, train_loader, optimizer, epoch)
+        test(model, device, test_loader)
+        scheduler.step()
+
+    if args.save_model:
+        torch.save(model.state_dict(), "mnist_cnn.pt")
+
+# GUI things
+def run_gui():
+    # Load the PyTorch model
+    model = CNN()
+    model.load_state_dict(torch.load('mnist_cnn.pt', weights_only=True))
+    model.eval()
+
+    # test the model before we run the GUI
+    device = torch.device("cpu")
+    test_dataset = datasets.MNIST('../data', train=False,
+                              transform=transform)
+    test_kwargs = {'batch_size': TEST_BATCH_SIZE}
+    test_loader = torch.utils.data.DataLoader(test_dataset, **test_kwargs)
+    test(model, device, test_loader)
+
+    # Run the GUI
+    root = tk.Tk()
+    root.title("MNIST DIGIT CLASSIFIER")
+
+    canvas = Canvas(root, width=300, height=300, bg='white')
+    canvas.pack()
+
+    def preprocess(img):
+        # resize, grayscale, and flip black and white
+        img = img.resize((28, 28)).convert('L')
+        img_array = np.array(img)
+        img_array = 255 - img_array
+        img = Image.fromarray(img_array.astype(np.uint8))
+
+        # apply the same transformation as before
+        img_tensor = transform(img)
+        img_tensor = img_tensor.unsqueeze(0) # add a dimension for the batch
+
+        # debug
+        # img.show()
+
+        return img_tensor
+
+    def paint(event):
+        x1, y1 = (event.x - 10), (event.y - 10)
+        x2, y2 = (event.x + 10), (event.y + 10)
+        canvas.create_oval(x1, y1, x2, y2, fill='black', outline='black')
+
+    def predict_digit():
+        # capture canvas content
+        # have to multiply by 2 because of retina display scaling ☝️🤓
+        # https://pillow.readthedocs.io/en/stable/reference/ImageGrab.html
+        x0 = 2 * (root.winfo_rootx() + canvas.winfo_x())
+        y0 = 2 * (root.winfo_rooty() + canvas.winfo_y())
+        x1 = x0 + 2 * canvas.winfo_width()
+        y1 = y0 + 2 * canvas.winfo_height()
+        print(x0, y0, x1, y1)
+        img = ImageGrab.grab()
+        img = img.crop((x0, y0, x1, y1))
+
+        # preprocess and predict
+        img_tensor = preprocess(img)
+        with torch.no_grad():
+            model.eval()
+            prediction = model(img_tensor)
+            probabilities = F.softmax(prediction, dim=1)
+            digit = torch.argmax(probabilities, dim=1).item()
+            confidence = torch.max(probabilities).item()
+
+        # display result
+        result_label.config(text=f'Prediction: {digit}\nConfidence: {confidence:.2f}')
+
+    def clear_canvas():
+        canvas.delete('all')
+
+    canvas.bind("<B1-Motion>", paint)
+
+    btn_predict = tk.Button(root, text="Predict", command=predict_digit)
+    btn_predict.pack()
+
+    btn_clear = tk.Button(root, text="Clear", command=clear_canvas)
+    btn_clear.pack()
+
+    result_label = tk.Label(root, text="", font=("Helvetica", 16))
+    result_label.pack()
+
+    root.mainloop()
+
+if __name__ == '__main__':
+    run_gui()
