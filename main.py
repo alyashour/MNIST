@@ -1,18 +1,21 @@
-import argparse
 from tkinter import Canvas
-
 import tkinter as tk
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 from PIL import Image, ImageGrab
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-import Quartz
 
+BATCH_SIZE = 64
+TEST_BATCH_SIZE = 1000
+EPOCHS = 4
+LEARNING_RATE = 0.001
+GAMMA = 0.7
+TRAINING_LOG_INTERVAL = 10_000
+DO_SAVE_MODEL = True
 
 class CNN(nn.Module):
     def __init__(self):
@@ -36,29 +39,28 @@ class CNN(nn.Module):
         x = F.relu(x)
         x = self.dropout2(x)
         x = self.fc2(x)
-        output = F.log_softmax(x, dim=1)
-        return output
+        return x
 
 transform=transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.1307,), (0.3081,))
 ])
 
-def train(args, model, device, train_loader, optimizer, epoch):
+def train(model, device, train_loader, optimizer, epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = F.nll_loss(output, target)
+        # loss = F.nll_loss(output, target)
+        loss = F.cross_entropy(output, target)
         loss.backward()
         optimizer.step()
-        if batch_idx % args.log_interval == 0:
+
+        if batch_idx % TRAINING_LOG_INTERVAL == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss.item()))
-            if args.dry_run:
-                break
 
 
 def test(model, device, test_loader):
@@ -79,42 +81,11 @@ def test(model, device, test_loader):
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
-BATCH_SIZE = 64
-TEST_BATCH_SIZE = 1000
-EPOCHS = 4
-LEARNING_RATE = 1.0
-GAMMA = 0.7
-
 def train_model():
-    # Training settings
-    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
-    parser.add_argument('--batch-size', type=int, default=BATCH_SIZE, metavar='N',
-                        help=f'input batch size for training (default: {BATCH_SIZE})')
-    parser.add_argument('--test-batch-size', type=int, default=TEST_BATCH_SIZE, metavar='N',
-                        help=f'input batch size for testing (default: {TEST_BATCH_SIZE})')
-    parser.add_argument('--epochs', type=int, default=EPOCHS, metavar='N',
-                        help=f'number of epochs to train (default: {EPOCHS})')
-    parser.add_argument('--lr', type=float, default=LEARNING_RATE, metavar='LR',
-                        help=f'learning rate (default: {LEARNING_RATE})')
-    parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
-                        help='Learning rate step gamma (default: 0.7)')
-    parser.add_argument('--no-cuda', action='store_true', default=True,
-                        help='disables CUDA training')
-    parser.add_argument('--no-mps', action='store_true', default=False,
-                        help='disables macOS GPU training')
-    parser.add_argument('--dry-run', action='store_true', default=False,
-                        help='quickly check a single pass')
-    parser.add_argument('--seed', type=int, default=1, metavar='S',
-                        help='random seed (default: 1)')
-    parser.add_argument('--log-interval', type=int, default=1000, metavar='N',
-                        help='how many batches to wait before logging training status')
-    parser.add_argument('--save-model', action='store_true', default=True,
-                        help='For Saving the current Model')
-    args = parser.parse_args()
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
-    use_mps = not args.no_mps and torch.backends.mps.is_available()
+    use_cuda = torch.cuda.is_available()
+    use_mps = torch.backends.mps.is_available()
 
-    torch.manual_seed(args.seed)
+    torch.manual_seed(5)
 
     if use_cuda:
         device = torch.device("cuda")
@@ -123,8 +94,8 @@ def train_model():
     else:
         device = torch.device("cpu")
 
-    train_kwargs = {'batch_size': args.batch_size}
-    test_kwargs = {'batch_size': args.test_batch_size}
+    train_kwargs = {'batch_size': BATCH_SIZE}
+    test_kwargs = {'batch_size': TEST_BATCH_SIZE}
     if use_cuda:
         cuda_kwargs = {'num_workers': 1,
                        'pin_memory': True,
@@ -140,18 +111,19 @@ def train_model():
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = CNN().to(device)
-    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+    # optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=LEARNING_RATE)
 
-    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
-    for epoch in range(1, args.epochs + 1):
-        train(args, model, device, train_loader, optimizer, epoch)
+    scheduler = StepLR(optimizer, step_size=1, gamma=GAMMA)
+    for epoch in range(1, EPOCHS + 1):
+        train(model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
         scheduler.step()
 
-    if args.save_model:
+    if DO_SAVE_MODEL:
         torch.save(model.state_dict(), "mnist_cnn.pt")
 
-# GUI things
+# GUI
 def run_gui():
     # Load the PyTorch model
     model = CNN()
@@ -202,7 +174,7 @@ def run_gui():
         y0 = 2 * (root.winfo_rooty() + canvas.winfo_y())
         x1 = x0 + 2 * canvas.winfo_width()
         y1 = y0 + 2 * canvas.winfo_height()
-        print(x0, y0, x1, y1)
+
         img = ImageGrab.grab()
         img = img.crop((x0, y0, x1, y1))
 
@@ -235,4 +207,5 @@ def run_gui():
     root.mainloop()
 
 if __name__ == '__main__':
+    train_model()
     run_gui()
