@@ -180,8 +180,7 @@ def run_gui():
         # capture canvas content
         # have to multiply by 2 because of retina display scaling ☝️🤓
         # https://pillow.readthedocs.io/en/stable/reference/ImageGrab.html
-        is_retina = hasattr(tk, "scaling") and tk.scaling() > 1.0
-        scaling_factor = 2 if is_retina else 1
+        scaling_factor = 2
         x0 = scaling_factor * (root.winfo_rootx() + canvas.winfo_x())
         y0 = scaling_factor * (root.winfo_rooty() + canvas.winfo_y())
         x1 = x0 + scaling_factor * canvas.winfo_width()
