@@ -49,21 +49,59 @@ transform=transforms.Compose([
     transforms.Normalize((0.1307,), (0.3081,))
 ])
 
-def train(model, device, train_loader, optimizer, epoch):
-    model.train()
-    for batch_idx, (data, target) in enumerate(train_loader):
-        data, target = data.to(device), target.to(device)
-        optimizer.zero_grad()
-        output = model(data)
-        # loss = F.nll_loss(output, target)
-        loss = F.cross_entropy(output, target)
-        loss.backward()
-        optimizer.step()
+def train(model, device, train_loader, optimizer, epochs):
+    # model.train()
+    # for batch_idx, (data, target) in enumerate(train_loader):
+    #     data, target = data.to(device), target.to(device)
+    #     optimizer.zero_grad()
+    #     output = model(data)
+    #     # loss = F.nll_loss(output, target)
+    #     loss = F.cross_entropy(output, target)
+    #     loss.backward()
+    #     optimizer.step()
+    #
+    #     if batch_idx % TRAINING_LOG_INTERVAL == 0:
+    #         print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+    #             epoch, batch_idx * len(data), len(train_loader.dataset),
+    #                    100. * batch_idx / len(train_loader), loss.item()))
+    #
+    # model.to(device)
+    # model.train()
+    # train_loss, train_acc = [], [] # 2 arrays to track the loss values and the accuracy of our model
 
-        if batch_idx % TRAINING_LOG_INTERVAL == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                       100. * batch_idx / len(train_loader), loss.item()))
+    train_loss, train_acc = [], [] # 2 arrays to track the loss values and the accuracy of our model
+    for epoch in range(epochs):
+        runningLoss = 0.0
+        correct = 0
+        total = 0
+
+        for images, labels, in train_loader:
+            images, labels = images.to(device), labels.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = F.cross_entropy(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            runningLoss += loss.item()
+            _, predicted = outputs.max(1)
+            correct += predicted.eq(labels).sum().item()
+            total += labels.size(0)
+
+        epoch_loss = runningLoss / len(train_loader)
+        epoch_acc = correct / total
+
+        train_loss.append(epoch_loss)
+        train_acc.append(epoch_acc)
+
+        print(f"Epoch {epoch+1}/{epochs}, Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}")
+
+        if epoch_acc >= 0.995: # If the model reaches 99.5% accuracy, we stop training
+            print("Model has reached 99.5% accuracy, stopping training")
+            break
+
+    return train_loss, train_acc
 
 def test(model, device, test_loader):
     model.eval()
@@ -118,17 +156,24 @@ def train_model():
     plt.show()
 
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
-    test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
+    # test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = CNN().to(device)
-    # optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LEARNING_RATE)
 
-    scheduler = StepLR(optimizer, step_size=1, gamma=GAMMA)
-    for epoch in range(1, EPOCHS + 1):
-        train(model, device, train_loader, optimizer, epoch)
-        test(model, device, test_loader)
-        scheduler.step()
+    train_loss, train_acc = train(model, device, train_loader, optimizer, EPOCHS)
+
+    fig, ax = plt.subplots(2,1)
+    ax[0].plot(train_loss, color='b', label="Training Loss")
+    ax[0].legend(loc='best', shadow=True)
+    ax[0].set_title("Training Loss Curve")
+
+    ax[1].plot(train_acc, color='r', label="Training Accuracy")
+    ax[1].legend(loc='best', shadow=True)
+    ax[1].set_title("Training Accuracy Curve")
+
+    plt.tight_layout()
+    plt.show()
 
     if DO_SAVE_MODEL:
         torch.save(model.state_dict(), "mnist_cnn.pt")
@@ -165,9 +210,6 @@ def run_gui():
         # apply the same transformation as before
         img_tensor = transform(img)
         img_tensor = img_tensor.unsqueeze(0) # add a dimension for the batch
-
-        # debug
-        # img.show()
 
         return img_tensor
 
@@ -219,5 +261,5 @@ def run_gui():
     root.mainloop()
 
 if __name__ == '__main__':
-    # train_model()
+    train_model()
     run_gui()
