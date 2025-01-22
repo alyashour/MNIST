@@ -1,6 +1,7 @@
 from tkinter import Canvas
 import tkinter as tk
 
+import numpy
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,6 +9,8 @@ import torch.nn.functional as F
 from PIL import Image, ImageGrab
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
+import seaborn
+import matplotlib.pyplot as plt
 
 BATCH_SIZE = 64
 TEST_BATCH_SIZE = 1000
@@ -62,7 +65,6 @@ def train(model, device, train_loader, optimizer, epoch):
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss.item()))
 
-
 def test(model, device, test_loader):
     model.eval()
     test_loss = 0
@@ -107,6 +109,14 @@ def train_model():
                               transform=transform)
     dataset2 = datasets.MNIST('../data', train=False,
                               transform=transform)
+
+    # Source: Zain Syed
+    # When using new unfamiliar datasets, it is always a good idea to visualize the data to get a better understanding of it, we can do this using seaborn
+    # Visualizing the distribution of labels in our training set to ensure they are evenly distributed
+    seaborn.countplot(x=numpy.array(dataset1.targets))
+    plt.title('Distribution of Labels in Training Set')
+    plt.show()
+
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
@@ -170,13 +180,16 @@ def run_gui():
         # capture canvas content
         # have to multiply by 2 because of retina display scaling ☝️🤓
         # https://pillow.readthedocs.io/en/stable/reference/ImageGrab.html
-        x0 = 2 * (root.winfo_rootx() + canvas.winfo_x())
-        y0 = 2 * (root.winfo_rooty() + canvas.winfo_y())
-        x1 = x0 + 2 * canvas.winfo_width()
-        y1 = y0 + 2 * canvas.winfo_height()
+        is_retina = hasattr(tk, "scaling") and tk.scaling() > 1.0
+        scaling_factor = 2 if is_retina else 1
+        x0 = scaling_factor * (root.winfo_rootx() + canvas.winfo_x())
+        y0 = scaling_factor * (root.winfo_rooty() + canvas.winfo_y())
+        x1 = x0 + scaling_factor * canvas.winfo_width()
+        y1 = y0 + scaling_factor * canvas.winfo_height()
 
         img = ImageGrab.grab()
         img = img.crop((x0, y0, x1, y1))
+        img.show()
 
         # preprocess and predict
         img_tensor = preprocess(img)
@@ -207,5 +220,5 @@ def run_gui():
     root.mainloop()
 
 if __name__ == '__main__':
-    train_model()
+    # train_model()
     run_gui()
