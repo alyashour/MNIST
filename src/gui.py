@@ -8,7 +8,7 @@ from torchvision import datasets
 from PIL import Image, ImageGrab
 
 from model import CNN, test_model
-from dataset_info import normalization_transform
+from train import normalization_transform
 
 # CONFIG
 IS_MAC = False
@@ -87,6 +87,7 @@ def run_gui(model):
 
     root.mainloop()
 
+# todo: maybe move to another file? potentially as a method of the model
 def get_model_accuracy(model, test_batch_size=1000):
     # load the test dataset
     test_kwargs = {'batch_size': test_batch_size}

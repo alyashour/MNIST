@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 from torch.nn import functional
-from torchvision import datasets
 
 # CONFIG
 EPOCHS = 4
@@ -16,6 +15,8 @@ TEST_BATCH_SIZE = 1000
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
+
+        # define the layers
         self.conv1 = nn.Conv2d(1, 32, 3, 1)
         self.conv2 = nn.Conv2d(32, 64, 3, 1)
         self.dropout1 = nn.Dropout(0.25)
@@ -24,6 +25,7 @@ class CNN(nn.Module):
         self.fc2 = nn.Linear(128, 10)
 
     def forward(self, x):
+        # define the architecture of the model
         x = self.conv1(x)
         x = functional.relu(x)
         x = self.conv2(x)
@@ -36,9 +38,22 @@ class CNN(nn.Module):
         x = self.dropout2(x)
         x = self.fc2(x)
         return x
-    
-def train_model(model, device, data_loader, optimizer, num_epochs):
-    # Source: Zain Syed the goat
+
+def train_model(model, device, data_loader, loss_func, optimizer, num_epochs=4):
+    """
+    Trains some model using the given data_loader and optimizer for the given number of epochs
+
+    Original function sourced from Zain Syed
+
+    :param model:       The model to be trained, architecture irrelevant
+    :param device:      i.e., a torch.device() object
+    :param data_loader: a data loader containing the training dataset
+    :param loss_func:   some loss function object instance, see torch.nn. Can also use functional API.
+    :param optimizer:   some optimizer, see torch.optim
+    :param num_epochs:  the number of training epochs, default=4
+    :return:            None
+    """
+
     train_loss, train_acc = [], [] # 2 arrays to track the loss values and the accuracy of our model
     for epoch in range(num_epochs):
         running_loss = 0.0
@@ -50,7 +65,7 @@ def train_model(model, device, data_loader, optimizer, num_epochs):
 
             optimizer.zero_grad()
             outputs = model(images)
-            loss = functional.cross_entropy(outputs, labels)
+            loss = loss_func(outputs, labels)
             loss.backward()
             optimizer.step()
 
@@ -75,6 +90,7 @@ def train_model(model, device, data_loader, optimizer, num_epochs):
     return train_loss, train_acc
 
 def test_model(model, data_loader):
+    # we can just test on the cpu
     device = torch.device('cpu')
     model.eval()
     

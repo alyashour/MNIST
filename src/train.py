@@ -1,14 +1,10 @@
-import numpy
-import seaborn
-import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import RMSprop
-from torchvision import datasets
+from torchvision import datasets, transforms
 
 from model import CNN, train_model
-from dataset_info import normalization_transform
-from lib.util import header
+from lib.util import header, plot_distribution, double_plot
 
 # CONFIG
 EPOCHS = 4
@@ -17,19 +13,11 @@ BATCH_SIZE = 64
 TEST_BATCH_SIZE = 1000
 # END CONFIG
 
-def plot_loss_and_acc(train_loss, train_acc):
-        fig, ax = plt.subplots(2,1)
-        ax[0].plot(train_loss, color='b', label="Training Loss")
-        ax[0].legend(loc='best', shadow=True)
-        ax[0].set_title("Training Loss Curve")
+normalization_transform=transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,)) # params analyzed from the dataset
+])
 
-        ax[1].plot(train_acc, color='r', label="Training Accuracy")
-        ax[1].legend(loc='best', shadow=True)
-        ax[1].set_title("Training Accuracy Curve")
-
-        plt.tight_layout()
-        plt.show()
-        
 def det_device_config(train_kwargs, test_kwargs):
     use_cuda = torch.cuda.is_available()
     use_mps = torch.backends.mps.is_available()
@@ -53,16 +41,6 @@ def det_device_config(train_kwargs, test_kwargs):
         test_kwargs.update(cuda_kwargs)
     
     return device, train_kwargs, test_kwargs
-    
-def plot_digit_distribution(title, data):
-    """
-    Source: Zain Syed
-    
-    """
-    
-    seaborn.countplot(x=numpy.array(data.targets))
-    plt.title(title)
-    plt.show()
 
 if __name__ == '__main__':
     # create dicts that contain our training and testing args
@@ -84,8 +62,8 @@ if __name__ == '__main__':
     
     # "When using new unfamiliar datasets, it is always a good idea to visualize the data to get a better understanding of it, we can do this using seaborn
     # Visualizing the distribution of labels in our training set to ensure they are evenly distributed" - Zain
-    plot_digit_distribution('Distribution of Labels in Training Set', train_data)
-    plot_digit_distribution('Distribution of Labels in Testing Set', test_data)
+    plot_distribution('Distribution of Labels in Training Set', train_data)
+    plot_distribution('Distribution of Labels in Testing Set', test_data)
     
     # train the model
     header("Training the model...")
@@ -93,6 +71,7 @@ if __name__ == '__main__':
         model,
         device,
         data_loader=DataLoader(train_data,**train_kwargs),
+        loss_func=torch.nn.CrossEntropyLoss(),
         optimizer=RMSprop(model.parameters(), lr=LEARNING_RATE),
         num_epochs=EPOCHS
     )
@@ -105,4 +84,4 @@ if __name__ == '__main__':
     print(f"Saved model to {MODEL_PATH}")
     
     # plot the loss and accuracy for us to view
-    plot_loss_and_acc(train_loss, train_acc)
+    double_plot(label1="Training Loss", data1=train_loss, label2="Training Accuracy", data2=train_acc)
