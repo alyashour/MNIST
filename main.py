@@ -50,25 +50,7 @@ transform=transforms.Compose([
 ])
 
 def train(model, device, train_loader, optimizer, epochs):
-    # model.train()
-    # for batch_idx, (data, target) in enumerate(train_loader):
-    #     data, target = data.to(device), target.to(device)
-    #     optimizer.zero_grad()
-    #     output = model(data)
-    #     # loss = F.nll_loss(output, target)
-    #     loss = F.cross_entropy(output, target)
-    #     loss.backward()
-    #     optimizer.step()
-    #
-    #     if batch_idx % TRAINING_LOG_INTERVAL == 0:
-    #         print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-    #             epoch, batch_idx * len(data), len(train_loader.dataset),
-    #                    100. * batch_idx / len(train_loader), loss.item()))
-    #
-    # model.to(device)
-    # model.train()
-    # train_loss, train_acc = [], [] # 2 arrays to track the loss values and the accuracy of our model
-
+    # Source: Zain Syed the goat
     train_loss, train_acc = [], [] # 2 arrays to track the loss values and the accuracy of our model
     for epoch in range(epochs):
         runningLoss = 0.0
