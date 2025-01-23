@@ -1,22 +1,18 @@
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import RMSprop
-from torchvision import datasets, transforms
+from torchvision import datasets
 
-from model import CNN, train_model
-from lib.util import header, plot_distribution, double_plot
+from model import CNN, train_model, get_model_accuracy, test_model
+from lib.util import header, plot_distribution, double_plot, normalization_transform
 
 # CONFIG
-EPOCHS = 4
+SESSION_1_EPOCH_COUNT = 3
+SESSION_2_EPOCH_COUNT = 3
 LEARNING_RATE = 0.001
 BATCH_SIZE = 64
 TEST_BATCH_SIZE = 1000
 # END CONFIG
-
-normalization_transform=transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.1307,), (0.3081,)) # params analyzed from the dataset
-])
 
 def det_device_config(train_kwargs, test_kwargs):
     use_cuda = torch.cuda.is_available()
@@ -24,7 +20,7 @@ def det_device_config(train_kwargs, test_kwargs):
 
     # use the most powerful available device
     if use_cuda:
-        print('using cuda capable device')
+        print('using cuda device')
         device = torch.device("cuda")
     elif use_mps:
         print('using mps')
@@ -65,22 +61,64 @@ if __name__ == '__main__':
     plot_distribution('Distribution of Labels in Training Set', train_data)
     plot_distribution('Distribution of Labels in Testing Set', test_data)
     
-    # train the model
+    # session 1 of training
     header("Training the model...")
+    optimizer = RMSprop(model.parameters(), lr=LEARNING_RATE)
     train_loss, train_acc = train_model(
         model,
         device,
         data_loader=DataLoader(train_data,**train_kwargs),
         loss_func=torch.nn.CrossEntropyLoss(),
-        optimizer=RMSprop(model.parameters(), lr=LEARNING_RATE),
-        num_epochs=EPOCHS
+        optimizer=optimizer,
+        num_epochs=SESSION_1_EPOCH_COUNT
     )
     print("Done training")
+
+    # save the checkpoint
+    header('Saving checkpoint 1...')
+    checkpoint_1_path = "../checkpoint1.pt"
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+    }, checkpoint_1_path)
+    print("Saved")
+
+    # loading the checkpoint
+    header('Loading checkpoint 1...')
+    checkpoint = torch.load(checkpoint_1_path)
+    new_model = CNN().to(device)
+    new_model.load_state_dict(checkpoint['model_state_dict'])
+    new_optimizer = RMSprop(new_model.parameters(), lr=LEARNING_RATE)
+    new_optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    print("Loaded")
+
+    print("Checking Accuracy...")
+    old_test_accuracy = test_model(model, DataLoader(test_data, **test_kwargs), device)
+    new_test_accuracy = test_model(new_model, DataLoader(test_data, **test_kwargs), device)
+    print("Loaded Accuracy: ", new_test_accuracy)
+    print("Expected Accuracy: ", old_test_accuracy)
+    print("Done")
+
+    # session 2 of training
+    header("Training the model...")
+    train_loss_2, train_acc_2 = train_model(
+        new_model,
+        device,
+        data_loader=DataLoader(train_data,**train_kwargs),
+        loss_func=torch.nn.CrossEntropyLoss(),
+        optimizer=new_optimizer,
+        num_epochs=SESSION_2_EPOCH_COUNT
+    )
+    print('Done training')
+
+    # combine the data from both training sessions
+    train_loss.extend(train_loss_2) # append the new loss values to the old ones
+    train_acc.extend(train_acc_2) # append the new accuracy values to the old ones
     
     # save the model
     header("Saving the model to file...")
     MODEL_PATH = "../mnist_cnn.pt"
-    torch.save(model.state_dict(), MODEL_PATH)
+    torch.save(new_model.state_dict(), MODEL_PATH)
     print(f"Saved model to {MODEL_PATH}")
     
     # plot the loss and accuracy for us to view

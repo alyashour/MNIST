@@ -1,6 +1,9 @@
 import torch
 from torch import nn
 from torch.nn import functional
+from torchvision import datasets
+
+from lib.util import normalization_transform
 
 # CONFIG
 EPOCHS = 4
@@ -89,9 +92,11 @@ def train_model(model, device, data_loader, loss_func, optimizer, num_epochs=4):
 
     return train_loss, train_acc
 
-def test_model(model, data_loader):
-    # we can just test on the cpu
-    device = torch.device('cpu')
+def test_model(model, data_loader, device=None):
+    # we can always test on the cpu if not given an input
+    if device is None:
+        device = torch.device('cpu')
+
     model.eval()
     
     test_loss = 0
@@ -111,4 +116,15 @@ def test_model(model, data_loader):
     accuracy = correct / data_len
     print(f'Test set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{data_len} ({100 * accuracy}%)')
     
+    return accuracy
+
+def get_model_accuracy(model, test_batch_size=1000):
+    # load the test dataset
+    test_kwargs = {'batch_size': test_batch_size}
+    test_data = datasets.MNIST('../../data', train=False, transform=normalization_transform)
+    test_loader = torch.utils.data.DataLoader(test_data, **test_kwargs)
+
+    # run the test
+    accuracy = test_model(model, test_loader)
+
     return accuracy
