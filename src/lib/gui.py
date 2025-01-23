@@ -5,14 +5,14 @@ from tkinter import Canvas
 import numpy as np
 import torch
 from torch.nn import functional
-from torchvision import datasets
+
 from PIL import Image, ImageGrab
 
-from model import CNN, test_model
+from model import CNN, get_model_accuracy
 from train import normalization_transform
 
 # CONFIG
-DEBUG = False                           # default False. Turns on some debug screenshots for you to see.
+DEBUG = True                           # default False. Turns on some debug screenshots for you to see.
 OVERRIDE_SCALING_FACTOR = None          # default None. Change this value if you have cropping issues.
 WINDOW_WIDTH = 300                      # default 300
 WINDOW_HEIGHT = 300                     # default 300
@@ -34,7 +34,7 @@ def get_scaling_factor():
 
     if OVERRIDE_SCALING_FACTOR:
         return OVERRIDE_SCALING_FACTOR
-    elif platform.system == 'darwin':
+    elif platform.system() == 'Darwin':
         return 2
     else:
         return 1
@@ -118,17 +118,7 @@ def run_gui(model):
 
     root.mainloop()
 
-# todo: maybe move to another file? potentially as a method of the model
-def get_model_accuracy(model, test_batch_size=1000):
-    # load the test dataset
-    test_kwargs = {'batch_size': test_batch_size}
-    test_data = datasets.MNIST('../../data', train=False, transform=normalization_transform)
-    test_loader = torch.utils.data.DataLoader(test_data, **test_kwargs)
-    
-    # run the test
-    accuracy = test_model(model, test_loader)
-    
-    return accuracy
+
 
 if __name__ == "__main__":
     # Load the PyTorch model

@@ -1,9 +1,15 @@
 import numpy
 import seaborn
 import matplotlib.pyplot as plt
+from torchvision import transforms
+
+normalization_transform=transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,)) # params analyzed from the dataset
+])
 
 def header(text):
-    print(text)
+    print(f'\n| {text} |')
     print('========================')
 
 def double_plot(label1, data1, label2, data2):
