@@ -7,18 +7,22 @@ import torch
 from torch.nn import functional
 
 from PIL import Image, ImageGrab
+from torchvision import datasets
 
-from model import CNN, get_model_accuracy
+from model import CNN, test_model
 from train import normalization_transform
 
 # CONFIG
-DEBUG = True                           # default False. Turns on some debug screenshots for you to see.
+DEBUG = False                           # default False. Turns on some debug screenshots for you to see.
 OVERRIDE_SCALING_FACTOR = None          # default None. Change this value if you have cropping issues.
 WINDOW_WIDTH = 300                      # default 300
 WINDOW_HEIGHT = 300                     # default 300
 WINDOW_BG_COLOR = 'white'               # default white
 DRAW_COLOR = 'black'                    # default black
 MINIMUM_VIABLE_MODEL_ACCURACY = 0.8     # default 0.8 (80%)
+
+# TESTING CONFIG
+TEST_BATCH_SIZE = 1000                  # default 1000
 
 # where to read the model .pt file from
 MODEL_PATH = '../../mnist_cnn.pt'   # default ../../mnist_cnn.pt
@@ -128,7 +132,14 @@ if __name__ == "__main__":
     
     # to make sure it's loaded correctly,
     # we'll test it and ensure a high enough accuracy
-    accuracy = get_model_accuracy(model)
+    # load the test dataset
+    test_kwargs = {'batch_size': TEST_BATCH_SIZE}
+    test_data = datasets.MNIST('../../data', train=False, transform=normalization_transform)
+    test_loader = torch.utils.data.DataLoader(test_data, **test_kwargs)
+
+    # run the test
+    accuracy = test_model(model, test_loader)
+
     if accuracy > MINIMUM_VIABLE_MODEL_ACCURACY:
         run_gui(model)
     else:

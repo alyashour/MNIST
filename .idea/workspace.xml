@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01312d93-cacf-40df-b87e-273157f45af7" name="Changes" comment="better gui config and scaling factor guessing">
+    <list default="true" id="01312d93-cacf-40df-b87e-273157f45af7" name="Changes" comment="fixed testing issue, successful checkpoint loading complete">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mnist_cnn.pt" beforeDir="false" afterPath="$PROJECT_DIR$/mnist_cnn.pt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/util.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/util.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/train.py" afterDir="false" />
     </list>
@@ -72,7 +70,7 @@
       <recent name="$PROJECT_DIR$/src/lib" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.train">
+  <component name="RunManager" selected="Python.gui">
     <configuration name="gui" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MNIST" />
       <option name="ENV_FILES" value="" />
@@ -144,8 +142,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.train" />
         <item itemvalue="Python.gui" />
+        <item itemvalue="Python.train" />
         <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
@@ -241,7 +239,23 @@
       <option name="project" value="LOCAL" />
       <updated>1737564881292</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="fixed apple platform bug and better header formatting">
+      <option name="closed" value="true" />
+      <created>1737597324383</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1737597324383</updated>
+    </task>
+    <task id="LOCAL-00010" summary="fixed testing issue, successful checkpoint loading complete">
+      <option name="closed" value="true" />
+      <created>1737597350827</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1737597350827</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -256,29 +270,15 @@
     <MESSAGE value="changed training + added training loss and accuracy curves (ty zain)" />
     <MESSAGE value="cleanup, moved graphing and plotting to util" />
     <MESSAGE value="better gui config and scaling factor guessing" />
-    <option name="LAST_COMMIT_MESSAGE" value="better gui config and scaling factor guessing" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/train.py</url>
-          <line>116</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/train.py</url>
-          <line>114</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="fixed apple platform bug and better header formatting" />
+    <MESSAGE value="fixed testing issue, successful checkpoint loading complete" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed testing issue, successful checkpoint loading complete" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MNIST$main.coverage" NAME="main Coverage Results" MODIFIED="1734972261800" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/mnist_classifier$train.coverage" NAME="train Coverage Results" MODIFIED="1737591391985" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/mnist_classifier$train.coverage" NAME="train Coverage Results" MODIFIED="1737597372357" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/MNIST$gui.coverage" NAME="gui Coverage Results" MODIFIED="1734831054230" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mnist_classifier$main.coverage" NAME="main Coverage Results" MODIFIED="1737565499226" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/mnist_classifier$gui.coverage" NAME="gui Coverage Results" MODIFIED="1737589682636" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/lib" />
+    <SUITE FILE_PATH="coverage/mnist_classifier$gui.coverage" NAME="gui Coverage Results" MODIFIED="1737597573713" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/lib" />
   </component>
 </project>

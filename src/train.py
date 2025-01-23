@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torch.optim import RMSprop
 from torchvision import datasets
 
-from model import CNN, train_model, get_model_accuracy, test_model
+from model import CNN, train_model, test_model
 from lib.util import header, plot_distribution, double_plot, normalization_transform
 
 # CONFIG

@@ -1,9 +1,6 @@
 import torch
 from torch import nn
 from torch.nn import functional
-from torchvision import datasets
-
-from lib.util import normalization_transform
 
 # CONFIG
 EPOCHS = 4
@@ -116,15 +113,4 @@ def test_model(model, data_loader, device=None):
     accuracy = correct / data_len
     print(f'Test set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{data_len} ({100 * accuracy}%)')
     
-    return accuracy
-
-def get_model_accuracy(model, test_batch_size=1000):
-    # load the test dataset
-    test_kwargs = {'batch_size': test_batch_size}
-    test_data = datasets.MNIST('../../data', train=False, transform=normalization_transform)
-    test_loader = torch.utils.data.DataLoader(test_data, **test_kwargs)
-
-    # run the test
-    accuracy = test_model(model, test_loader)
-
     return accuracy
