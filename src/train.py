@@ -1,21 +1,24 @@
-import torch
-from torch.utils.data import DataLoader
-from torch.optim import RMSprop
-from torchvision import datasets
+import torch # Main PyTorch library
+from torch.utils.data import DataLoader # What we use to load data into our model in batches (multiple images at once)
+from torch.optim import RMSprop # Simply an optimization function (it adjusts the weights of our model to minimize the loss, and correct errors during training)
+from torchvision import datasets # Contains the MNIST dataset
 
-from model import CNN, train_model, test_model
-from lib.util import header, plot_distribution, double_plot, normalization_transform
+from model import CNN, train_model, test_model # Importing our model, training and testing functions that we defined in model.py
+from lib.util import header, plot_distribution, double_plot, normalization_transform # Functions Aly defined in the lib folder (util.py)
 
 # CONFIG
-SESSION_1_EPOCH_COUNT = 3
-SESSION_2_EPOCH_COUNT = 3
-LEARNING_RATE = 0.001
-BATCH_SIZE = 64
-TEST_BATCH_SIZE = 1000
+# Keep in mind, we do not necessarily need 2 training sessions, we can simply do one with 5/6 epochs, however it is implemented to demonstrate the process of checkpointing our model
+SESSION_1_EPOCH_COUNT = 3 # Number of epochs in our first training session
+SESSION_2_EPOCH_COUNT = 3 # Number of epochs in our second training session
+LEARNING_RATE = 0.001 # This value defines how fast our model will learn, too fast can cause processing issues, too slow is... too slow
+BATCH_SIZE = 64 # The number of images we will be training on at once
+TEST_BATCH_SIZE = 1000 # The number of images we will be testing on at once
 # END CONFIG
 
-def det_device_config(train_kwargs, test_kwargs):
-    use_cuda = torch.cuda.is_available()
+def det_device_config(train_kwargs, test_kwargs): # Takes in two arguements, being dictionaries. These dictionaries store configuration values for training and testing
+    
+    # The following code is used to determine the device that will be used to train the model
+    use_cuda = torch.cuda.is_available() 
     use_mps = torch.backends.mps.is_available()
 
     # use the most powerful available device
@@ -56,14 +59,14 @@ if __name__ == '__main__':
     test_data = datasets.MNIST('../data', train=False, transform=normalization_transform)
     print("Done loading datasets")
     
-    # "When using new unfamiliar datasets, it is always a good idea to visualize the data to get a better understanding of it, we can do this using seaborn
-    # Visualizing the distribution of labels in our training set to ensure they are evenly distributed" - Zain
+    # When using new unfamiliar datasets, it is always a good idea to visualize the data to get a better understanding of it, we can do this using seaborn
+    # Visualizing the distribution of labels in our training set to ensure they are evenly distributed
     plot_distribution('Distribution of Labels in Training Set', train_data)
     plot_distribution('Distribution of Labels in Testing Set', test_data)
     
     # session 1 of training
     header("Training the model...")
-    optimizer = RMSprop(model.parameters(), lr=LEARNING_RATE)
+    optimizer = RMSprop(model.parameters(), lr=LEARNING_RATE) # RMSProp is our optimization function, aiming to reduce loss over the training process
     train_loss, train_acc = train_model(
         model,
         device,
@@ -112,8 +115,7 @@ if __name__ == '__main__':
     print('Done training')
 
     # combine the data from both training sessions
-    train_loss.extend(train_loss_2) # append the new loss values to the old ones
-    train_acc.extend(train_acc_2) # append the new accuracy values to the old ones
+    
     
     # save the model
     header("Saving the model to file...")

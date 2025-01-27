@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< Updated upstream
     <list default="true" id="01312d93-cacf-40df-b87e-273157f45af7" name="Changes" comment="merged zain branch" />
+=======
+    <list default="true" id="01312d93-cacf-40df-b87e-273157f45af7" name="Changes" comment="changed training + added training loss and accuracy curves (ty zain)" />
+>>>>>>> Stashed changes
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -169,7 +173,10 @@
       <workItem from="1737475118085" duration="1935000" />
       <workItem from="1737499453051" duration="5500000" />
       <workItem from="1737520238780" duration="2724000" />
+<<<<<<< Updated upstream
       <workItem from="1737658911414" duration="1012000" />
+=======
+>>>>>>> Stashed changes
     </task>
     <task id="LOCAL-00001" summary="model training done">
       <option name="closed" value="true" />
@@ -219,6 +226,7 @@
       <option name="project" value="LOCAL" />
       <updated>1737522951761</updated>
     </task>
+<<<<<<< Updated upstream
     <task id="LOCAL-00007" summary="cleanup, moved graphing and plotting to util">
       <option name="closed" value="true" />
       <created>1737564156740</created>
@@ -268,6 +276,9 @@
       <updated>1737659901338</updated>
     </task>
     <option name="localTasksCounter" value="13" />
+=======
+    <option name="localTasksCounter" value="7" />
+>>>>>>> Stashed changes
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -291,6 +302,7 @@
     <MESSAGE value="added initial plot" />
     <MESSAGE value="replace mac function with variable" />
     <MESSAGE value="changed training + added training loss and accuracy curves (ty zain)" />
+<<<<<<< Updated upstream
     <MESSAGE value="cleanup, moved graphing and plotting to util" />
     <MESSAGE value="better gui config and scaling factor guessing" />
     <MESSAGE value="fixed apple platform bug and better header formatting" />
@@ -298,12 +310,20 @@
     <MESSAGE value="cleanup training code and debug mode off" />
     <MESSAGE value="merged zain branch" />
     <option name="LAST_COMMIT_MESSAGE" value="merged zain branch" />
+=======
+    <option name="LAST_COMMIT_MESSAGE" value="changed training + added training loss and accuracy curves (ty zain)" />
+>>>>>>> Stashed changes
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MNIST$main.coverage" NAME="main Coverage Results" MODIFIED="1734972261800" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mnist_classifier$train.coverage" NAME="train Coverage Results" MODIFIED="1737597372357" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/MNIST$gui.coverage" NAME="gui Coverage Results" MODIFIED="1734831054230" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+<<<<<<< Updated upstream
     <SUITE FILE_PATH="coverage/mnist_classifier$main.coverage" NAME="main Coverage Results" MODIFIED="1737565499226" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mnist_classifier$gui.coverage" NAME="gui Coverage Results" MODIFIED="1737597573713" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/lib" />
+=======
+    <SUITE FILE_PATH="coverage/mnist_classifier$main.coverage" NAME="main Coverage Results" MODIFIED="1737522692598" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mnist_classifier$gui.coverage" NAME="gui Coverage Results" MODIFIED="1737213416536" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+>>>>>>> Stashed changes
   </component>
 </project>
