@@ -3,10 +3,6 @@ from torch import nn
 from torch.nn import functional
 
 # CONFIG
-EPOCHS = 4 # Number of times we will be training the model on the SAME dataset
-LEARNING_RATE = 0.001 # A custom value we use to how fast the model will learn, lower rates are slower but more stable, higher are fast but can have errors
-# GAMMA = 0.7 # A custom value we use to decay the learning rate, it is used to prevent the model from overfitting
-# TRAINING_LOG_INTERVAL = 10_000 # The interval at which we will be logging the training progress
 EPOCH_BREAK_ACCURACY = .995 # The target accuracy, we stop training if the model reaches this accuracy
 TEST_BATCH_SIZE = 1000 # Test batch size is the number of images we will be testing on
 # END CONFIG
@@ -17,7 +13,7 @@ class CNN(nn.Module):
 
         super(CNN, self).__init__() # The super keyword allows us to access the parent class's properties, the self keyword refers to the instance of the class
 
-        # A kernel of 3 is simpky a 3x3 matrix that is used to specifically look at features on the 28x28 pixel image
+        # A kernel of 3 is simply a 3x3 matrix that is used to specifically look at features on the 28x28 pixel image
         # The stride of 1 is how many pixels the kernel will move after reading a portion of an image
         self.conv1 = nn.Conv2d(1, 32, 3, 1) # We are defining a convolutional layer with 1 input channel, 32 output channels (extract 32 feature maps), a kernel size of 3, and a stride of 1
         self.conv2 = nn.Conv2d(32, 64, 3, 1) # 32 inputs resulting from the previous 32 outputs, and 64 outputs, kernel size of 3, and stride of 1
@@ -46,7 +42,7 @@ class CNN(nn.Module):
         x = self.fc2(x)
         return x # Returning the data after passing it through the model
 
-def train_model(model, device, data_loader, loss_func, optimizer, num_epochs=EPOCHS):
+def train_model(model, device, data_loader, loss_func, optimizer, num_epochs):
     """
     Trains some model using the given data_loader and optimizer for the given number of epochs
 
@@ -91,8 +87,8 @@ def train_model(model, device, data_loader, loss_func, optimizer, num_epochs=EPO
 
         print(f"Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}")
 
-        if epoch_acc >= 0.995: # If the model reaches 99.5% accuracy, we stop training
-            print("Model has reached 99.5% accuracy, stopping training")
+        if epoch_acc >= EPOCH_BREAK_ACCURACY: # If the model reaches some predefined accuracy, we stop training
+            print(f"Model has reached {EPOCH_BREAK_ACCURACY} accuracy, stopping training")
             break
 
     return train_loss, train_acc
