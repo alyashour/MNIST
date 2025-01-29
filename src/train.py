@@ -15,7 +15,7 @@ BATCH_SIZE = 64 # The number of images we will be training on at once
 TEST_BATCH_SIZE = 1000 # The number of images we will be testing on at once
 # END CONFIG
 
-def det_device_config(train_kwargs, test_kwargs): # Takes in two arguements, being dictionaries. These dictionaries store configuration values for training and testing
+def det_device_config(train_kwargs, test_kwargs): # Takes in two arguments, being dictionaries. These dictionaries store configuration values for training and testing
     
     # The following code is used to determine the device that will be used to train the model
     use_cuda = torch.cuda.is_available() 
