@@ -115,7 +115,9 @@ if __name__ == '__main__':
     print('Done training')
 
     # combine the data from both training sessions
-    
+    train_loss.extend(train_loss_2) 
+    train_acc.extend(train_acc_2)
+
     
     # save the model
     header("Saving the model to file...")
